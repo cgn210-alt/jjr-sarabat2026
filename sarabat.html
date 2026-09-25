@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2026 사르밧 프로젝트 · 감사의 쌀 나눔 현황</title>
+  <meta property="og:title" content="2026 사르밧 프로젝트 · 추수감사절 감사의 쌀 나눔" />
+  <meta property="og:description" content="중종로공동체 순별 입금 현황 (실시간)" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://cgn210-alt.github.io/jjr-sarabat2026/sarabat-og.png?v=1" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* ── 히어로 배너 (썸네일) ── */
+    .hero { max-width: 1100px; margin: 0 auto; padding: 16px 16px 0; }
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #3d2211 0%, #6b3a1e 45%, #a5651f 100%);
+      border-radius: 16px;
+      padding: 22px 22px 24px;
+      color: #fff8ec;
+    }
+    .hero-deco { position: absolute; right: -10px; bottom: -14px; opacity: 0.4; pointer-events: none; }
+    .hero-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 1; }
+    .hero-back { color: #f3caa0; text-decoration: none; font-size: 12px; }
+    .hero-back:hover { text-decoration: underline; }
+    .hero-pill { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 4px 12px; border-radius: 20px; }
+    .hero-label { font-size: 11px; letter-spacing: 0.2em; color: #f3caa0; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; position: relative; z-index: 1; }
+    .hero-title { font-size: 24px; font-weight: 900; line-height: 1.35; margin-bottom: 8px; position: relative; z-index: 1; }
+    .hero-title b { color: #ffd98a; }
+    .hero-sub { font-size: 12.5px; color: #f0dcc0; position: relative; z-index: 1; max-width: 70%; }
+
+    /* ── 안내 카드 ── */
+    .notice {
+      max-width: 1100px;
+      margin: 16px auto 0;
+      padding: 0 16px;
+    }
+    .notice-card {
+      background: #fffaf0;
+      border: 1px solid #f0d9ad;
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .notice-verse {
+      font-size: 12px;
+      color: #8a5a20;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+    .notice-card ol {
+      margin: 0 0 12px 18px;
+      font-size: 12.5px;
+      color: #333;
+    }
+    .notice-card ol li { margin-bottom: 4px; }
+    .notice-card .amount { color: #a5651f; font-weight: 900; }
+    .notice-card .deadline { color: #b3261e; font-weight: 900; }
+    .notice-sub {
+      background: white;
+      border: 1px solid #f0d9ad;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    .notice-sub b { color: #6b3a1e; }
+    .account-box {
+      background: #6b3a1e;
+      color: white;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .account-box .bank { font-size: 12px; font-weight: 500; color: #fbe3c2; margin-right: 6px; }
+
+    /* ── 전체 현황 카드 ── */
+    .summary-bar {
+      max-width: 1100px;
+      margin: 16px auto 0;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .summary-card.total {
+      background: white;
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .summary-card.total .num { font-size: 30px; font-weight: 900; color: #a5651f; }
+    .summary-card.total .label { font-size: 12px; color: #888; margin-top: 2px; }
+    .progress-track { height: 8px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg,#a5651f,#d99a3e); border-radius: 10px; transition: width 0.4s ease; }
+
+    .summary-row3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .summary-card .num { font-size: 22px; font-weight: 900; }
+    .summary-card .label { font-size: 11px; color: #888; margin-top: 2px; }
+    .summary-card.faith .num { color: #7c3aed; }
+    .summary-card.hope  .num { color: #1d4ed8; }
+    .summary-card.love  .num { color: #be185d; }
+
+    /* ── 본문 ── */
+    .container { max-width: 1100px; margin: 20px auto 40px; padding: 0 16px; }
+
+    .darakbang-block { margin-bottom: 24px; }
+    .darakbang-title {
+      font-size: 16px;
+      font-weight: 900;
+      padding: 10px 16px;
+      border-radius: 8px 8px 0 0;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .darakbang-title .count-badge {
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255,255,255,0.25);
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+    .faith-bg { background: linear-gradient(90deg, #6d28d9, #7c3aed); }
+    .hope-bg  { background: linear-gradient(90deg, #1e40af, #1d4ed8); }
+    .love-bg  { background: linear-gradient(90deg, #9d174d, #be185d); }
+
+    .sub-block {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-top: none;
+      margin-bottom: 2px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sub-block:last-child { border-radius: 0 0 8px 8px; }
+
+    .sub-header {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .sub-header.faith-sub { background: #ede9fe; color: #5b21b6; border-left: 4px solid #7c3aed; }
+    .sub-header.hope-sub  { background: #dbeafe; color: #1e40af; border-left: 4px solid #1d4ed8; }
+    .sub-header.love-sub  { background: #fce7f3; color: #9d174d; border-left: 4px solid #be185d; }
+    .sub-header .leader-tag { font-size: 11px; font-weight: 500; color: #666; }
+
+    table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+    thead tr { background: #f9fafb; }
+    th {
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+    th:nth-child(1) { width: 14%; text-align: center; }
+    th:nth-child(2) { width: 22%; }
+    th:nth-child(3) { width: 40%; }
+    th:nth-child(4) { width: 24%; text-align: center; }
+    td {
+      padding: 7px 10px;
+      font-size: 12px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    tr:last-child td { border-bottom: none; }
+    td:nth-child(1) { text-align: center; font-weight: 700; color: #aaa; }
+    td.leader { font-weight: 700; color: #1e40af; }
+    td.tag { color: #6b3a1e; font-family: 'Courier New', monospace; font-weight: 700; font-size: 11px; }
+
+    td.status-cell { text-align: center; }
+    .paid-mark {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #16a34a; color: #fff; font-size: 12px; font-weight: 900; line-height: 1;
+    }
+
+    @media (max-width: 600px) {
+      th, td { padding: 6px 8px; font-size: 11px; }
+      td.tag { font-size: 10px; }
+      .paid-mark { width: 16px; height: 16px; font-size: 10px; }
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: #bbb;
+    }
+    footer a { color: #999; }
+
+    @media (max-width: 600px) {
+      .summary-card.total .num { font-size: 24px; }
+      .summary-card { padding: 10px 6px; }
+      .summary-card .num { font-size: 16px; }
+      .container { padding: 0 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-card">
+    <svg class="hero-deco" width="170" height="170" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#ffd98a" stroke-width="2" stroke-linecap="round">
+        <path d="M40 170 C 50 120, 60 90, 55 40" />
+        <path d="M90 170 C 95 110, 100 70, 95 20" />
+        <path d="M140 170 C 145 125, 150 95, 145 45" />
+      </g>
+      <g fill="#ffd98a">
+        <ellipse cx="52" cy="50" rx="6" ry="10" transform="rotate(-20 52 50)"/>
+        <ellipse cx="60" cy="65" rx="6" ry="10" transform="rotate(15 60 65)"/>
+        <ellipse cx="48" cy="80" rx="6" ry="10" transform="rotate(-10 48 80)"/>
+        <ellipse cx="92" cy="30" rx="6" ry="10" transform="rotate(-20 92 30)"/>
+        <ellipse cx="100" cy="45" rx="6" ry="10" transform="rotate(15 100 45)"/>
+        <ellipse cx="88" cy="60" rx="6" ry="10" transform="rotate(-10 88 60)"/>
+        <ellipse cx="142" cy="55" rx="6" ry="10" transform="rotate(-20 142 55)"/>
+        <ellipse cx="150" cy="70" rx="6" ry="10" transform="rotate(15 150 70)"/>
+        <ellipse cx="138" cy="85" rx="6" ry="10" transform="rotate(-10 138 85)"/>
+      </g>
+    </svg>
+    <div class="hero-top">
+      <a href="https://cgn210-alt.github.io/jjr-jonggangye-2026/" class="hero-back">← 중종로공동체 홈으로</a>
+      <span class="hero-pill">중종로공동체</span>
+    </div>
+    <div class="hero-label">2026 사르밧 프로젝트</div>
+    <div class="hero-title">추수감사절 <b>감사의 쌀 나눔</b></div>
+    <div class="hero-sub">순별 입금 현황 (실시간) · 하나님의 풍성한 은혜를 이웃과 함께 나눕니다</div>
+  </div>
+</div>
+
+<div class="notice">
+  <div class="notice-card">
+    <div class="notice-verse">"지극히 작은 자 하나에게 한 것이 곧 내게 한 것이니라" (마 25:40)</div>
+    <ol>
+      <li>작년과 동일하게 현물(쌀) 대신 헌금으로 참여합니다.</li>
+      <li>순별로 쌀 20kg에 해당하는 헌금 <span class="amount">65,000원</span>을 기준으로 형편에 맞게 아래 계좌로 <span class="deadline">10월 11일(주일)</span>까지 입금해 주세요.</li>
+    </ol>
+    <div class="notice-sub"><b>입금 시 표시 방법</b> — 공동체+다락방+순번 (예: 중종로믿음12, 일곱 자 이내). 성도 개인 입금 시(연말정산 반영 가능)에는 이름, 생년월일을 기입합니다. (예: 홍길동260691)</div>
+    <div class="account-box"><span class="bank">서빙고 · 하나은행</span>573-910019-14805 온누리교회</div>
+  </div>
+</div>
+
+<div class="summary-bar">
+  <div class="summary-card total">
+    <div class="num" id="totalPercent">0%</div>
+    <div class="label">목표 달성률 · <span id="totalPaid">34개 순 / 0개 순 입금완료</span></div>
+    <div class="progress-track"><div class="progress-fill" id="totalProgress" style="width:0%;"></div></div>
+  </div>
+  <div class="summary-row3">
+    <div class="summary-card faith">
+      <div class="num" id="faithPaid">0/12</div>
+      <div class="label">믿음 다락방</div>
+    </div>
+    <div class="summary-card hope">
+      <div class="num" id="hopePaid">0/7</div>
+      <div class="label">소망 다락방</div>
+    </div>
+    <div class="summary-card love">
+      <div class="num" id="lovePaid">0/15</div>
+      <div class="label">사랑 다락방</div>
+    </div>
+  </div>
+</div>
+
+<div class="container" id="container"></div>
+
+<footer>
+  중종로공동체 · <a href="./sarabat-admin.html">관리자</a>
+</footer>
+
+<script>
+// ── 34개 순 구조 (org.html 명단 기준, 직분 제외) ──────────────────
+var DARAKBANG = [
+  { key:'믿음', label:'믿음 다락방', cls:'faith', subs:[
+      { key:'믿음1', label:'믿음1다락방', leaderTag:'다락방장 김현식', suns:[
+          {no:1, leader:'김의래, 김성희'},
+          {no:2, leader:'주웅현, 서정숙'},
+          {no:3, leader:'김현식, 복유선'},
+          {no:4, leader:'정순영'},
+          {no:5, leader:'정두식, 이영미'},
+          {no:6, leader:'황한나'},
+      ]},
+      { key:'믿음2', label:'믿음2다락방', leaderTag:'다락방장 엄재준', suns:[
+          {no:8, leader:'조재관, 김문경'},
+          {no:9, leader:'이금자'},
+          {no:10, leader:'송영이'},
+          {no:11, leader:'이성진, 김혜진'},
+          {no:12, leader:'이창권, 이임순'},
+          {no:13, leader:'김영미'},
+      ]},
+  ]},
+  { key:'소망', label:'소망 다락방', cls:'hope', subs:[
+      { key:'소망1', label:'소망1다락방', leaderTag:'다락방장 홍진섭', suns:[
+          {no:1, leader:'박제한, 김윤미'},
+          {no:2, leader:'강행자'},
+          {no:3, leader:'이명선'},
+          {no:4, leader:'이강남'},
+      ]},
+      { key:'소망2', label:'소망2다락방', leaderTag:'다락방장 남관우', suns:[
+          {no:8, leader:'남관우, 구자영'},
+          {no:9, leader:'최인경'},
+          {no:10, leader:'허은진'},
+      ]},
+  ]},
+  { key:'사랑', label:'사랑 다락방', cls:'love', subs:[
+      { key:'사랑1', label:'사랑1다락방', leaderTag:'다락방장 김성현', suns:[
+          {no:1, leader:'김성현, 전성심'},
+          {no:2, leader:'고주식, 윤수란'},
+          {no:3, leader:'유덕영, 정현지'},
+          {no:4, leader:'이숙인'},
+          {no:5, leader:'—'},
+          {no:6, leader:'강은주'},
+          {no:7, leader:'송정미'},
+      ]},
+      { key:'사랑2', label:'사랑2다락방', leaderTag:'다락방장 김진국', suns:[
+          {no:8, leader:'이성한, 이선화'},
+          {no:9, leader:'안승립, 구혜정'},
+          {no:10, leader:'이영욱'},
+          {no:11, leader:'최황, 오영미'},
+          {no:12, leader:'박지수, 이지영'},
+          {no:13, leader:'김종중, 정영혜'},
+          {no:14, leader:'정충균, 이종선'},
+          {no:15, leader:'이연주'},
+      ]},
+  ]},
+];
+
+function sunKey(subKey, no) { return subKey + '-' + no; }
+function depositTag(groupKey, no) { return '중종로' + groupKey + no; }
+function firstName(leader) { return leader.split(',')[0].trim(); }
+
+// 입금완료 시 표시하는 체크 표식. 미입금은 빈 칸.
+var PAID_MARK = '<span class="paid-mark" role="img" aria-label="입금완료">&#10003;</span>';
+
+// ── 렌더링 ──────────────────────────────────────
+function render(paidMap) {
+  paidMap = paidMap || {};
+  var container = document.getElementById('container');
+  container.innerHTML = '';
+
+  var grandTotal = 0, grandPaid = 0;
+  var groupStat = {};
+
+  DARAKBANG.forEach(function(group) {
+    var block = document.createElement('div');
+    block.className = 'darakbang-block';
+
+    var groupTotal = 0, groupPaid = 0;
+    group.subs.forEach(function(sub) {
+      sub.suns.forEach(function(sun) {
+        groupTotal++;
+        if (paidMap[sunKey(sub.key, sun.no)]) groupPaid++;
+      });
+    });
+    groupStat[group.key] = { total: groupTotal, paid: groupPaid };
+    grandTotal += groupTotal;
+    grandPaid  += groupPaid;
+
+    var titleDiv = document.createElement('div');
+    titleDiv.className = 'darakbang-title ' + group.cls + '-bg';
+    titleDiv.innerHTML = group.label + ' <span class="count-badge">' + groupTotal + '개 순 / ' + groupPaid + '개 순 입금완료</span>';
+    block.appendChild(titleDiv);
+
+    group.subs.forEach(function(sub) {
+      var subBlock = document.createElement('div');
+      subBlock.className = 'sub-block';
+
+      var header = document.createElement('div');
+      header.className = 'sub-header ' + group.cls + '-sub';
+      header.innerHTML = sub.label + ' <span class="leader-tag">' + sub.leaderTag + '</span>';
+      subBlock.appendChild(header);
+
+      var table = document.createElement('table');
+      table.innerHTML =
+        '<thead><tr><th>순</th><th>순장</th><th>입금자명 표시</th><th>입금</th></tr></thead>' +
+        '<tbody>' +
+        sub.suns.map(function(sun) {
+          var paid = !!paidMap[sunKey(sub.key, sun.no)];
+          return '<tr>' +
+            '<td>' + sun.no + '</td>' +
+            '<td class="leader">' + firstName(sun.leader) + '</td>' +
+            '<td class="tag">' + depositTag(group.key, sun.no) + '</td>' +
+            '<td class="status-cell">' + (paid ? PAID_MARK : '') + '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody>';
+      subBlock.appendChild(table);
+      block.appendChild(subBlock);
+    });
+
+    container.appendChild(block);
+  });
+
+  var totalPct = grandTotal ? Math.round(grandPaid / grandTotal * 100) : 0;
+  document.getElementById('totalPercent').textContent = totalPct + '%';
+  document.getElementById('totalPaid').textContent = grandTotal + '개 순 / ' + grandPaid + '개 순 입금완료';
+  document.getElementById('totalProgress').style.width = totalPct + '%';
+  document.getElementById('faithPaid').textContent = groupStat['믿음'].paid + '/' + groupStat['믿음'].total;
+  document.getElementById('hopePaid').textContent  = groupStat['소망'].paid + '/' + groupStat['소망'].total;
+  document.getElementById('lovePaid').textContent  = groupStat['사랑'].paid + '/' + groupStat['사랑'].total;
+}
+
+// ── 데이터 로드 (Firebase REST API, 주기적 폴링) ──────────────────
+var DB_URL = 'https://cgn-love-default-rtdb.asia-southeast1.firebasedatabase.app/sarabat2026/paid.json';
+var POLL_INTERVAL = 8000;
+
+function loadData() {
+  fetch(DB_URL, { cache: 'no-store' })
+    .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(function(data) { render(data || {}); })
+    .catch(function() { render({}); });
+}
+
+render({});
+loadData();
+setInterval(loadData, POLL_INTERVAL);
+</script>
+
+</body>
+</html>

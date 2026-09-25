@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1200px; height:630px; overflow:hidden; }
+  body {
+    font-family:'Noto Sans KR', sans-serif;
+    position:relative;
+    background:
+      radial-gradient(1000px 640px at 10% -10%, rgba(255,255,255,0.20), transparent 55%),
+      linear-gradient(135deg, #C2410C 0%, #E8871A 55%, #F4B942 100%);
+  }
+  .frame {
+    position:absolute; inset:22px;
+    border:2px solid rgba(255,255,255,0.35);
+    border-radius:18px;
+  }
+  .pill {
+    position:absolute; top:60px; left:64px;
+    font-size:17px; font-weight:700; letter-spacing:0.22em;
+    color:#7c2d0e; background:#ffffff;
+    padding:8px 20px; border-radius:30px;
+  }
+  .rule {
+    position:absolute; top:112px; left:66px;
+    width:64px; height:5px; border-radius:3px;
+    background:#7c2d0e;
+  }
+  .title {
+    position:absolute; top:140px; left:64px;
+    font-size:68px; font-weight:900;
+    line-height:1.32;
+  }
+  .title .l1 { color:#fff8ec; text-shadow: 0 3px 14px rgba(0,0,0,0.2); }
+  .title .l2 { color:#5c2408; }
+  .subtitle {
+    position:absolute; top:368px; left:64px;
+    font-size:24px; font-weight:700; color:#fff8ec;
+  }
+  .footer-tag {
+    position:absolute; bottom:52px; left:64px;
+    font-size:18px; font-weight:700; color:#7c2d0e;
+    background:rgba(255,255,255,0.85);
+    padding:7px 18px; border-radius:24px;
+  }
+  .verse {
+    position:absolute; bottom:56px; right:64px;
+    font-size:15px; color:#fff2df; font-style:italic; text-align:right;
+    max-width:320px; line-height:1.6; opacity:0.9;
+  }
+</style>
+</head>
+<body>
+
+<div class="frame"></div>
+
+<div class="pill">2026 사르밧 프로젝트</div>
+<div class="rule"></div>
+<div class="title">
+  <div class="l1">추수감사절</div>
+  <div class="l2">감사의 쌀 나눔</div>
+</div>
+<div class="subtitle">중종로공동체 · 순별 입금 현황</div>
+<div class="footer-tag">jjr-jonggangye-2026.github.io</div>
+<div class="verse">"지극히 작은 자 하나에게 한 것이<br>곧 내게 한 것이니라" (마 25:40)</div>
+
+</body>
+</html>

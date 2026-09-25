@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>사르밧 쌀 나눔 관리자</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#f5f4f1; --surface:#ffffff; --surface-sub:#f9f8f6;
+      --border:#e4e2dc; --border-strong:#c8c5bc;
+      --text-primary:#1a1916; --text-secondary:#5c5a55; --text-muted:#9c9990;
+      --accent:#a5651f; --accent-bg:#fdf1e0; --radius:10px;
+      --font:'Noto Sans KR',sans-serif;
+    }
+    body { font-family:var(--font); background:var(--bg); color:var(--text-primary); min-height:100vh; -webkit-font-smoothing:antialiased; }
+    .login-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
+    .login-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px 28px; width:100%; max-width:340px; text-align:center; }
+    .login-title { font-size:18px; font-weight:700; margin-bottom:6px; }
+    .login-sub { font-size:12px; color:var(--text-muted); margin-bottom:24px; }
+    .login-card input[type="email"] { width:100%; font-family:var(--font); font-size:15px; background:var(--surface-sub); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px; outline:none; margin-bottom:8px; }
+    .login-card input[type="email"]:focus { border-color:var(--accent); }
+    .login-card input[type="password"] { width:100%; font-family:var(--font); font-size:15px; background:var(--surface-sub); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px; outline:none; text-align:center; letter-spacing:4px; margin-bottom:12px; }
+    .login-card input[type="password"]:focus { border-color:var(--accent); }
+    .btn-login { width:100%; font-family:var(--font); font-size:14px; font-weight:500; color:#fff; background:var(--accent); border:none; border-radius:var(--radius); padding:11px; cursor:pointer; }
+    .login-error { font-size:12px; color:#9c1a1a; margin-top:10px; display:none; }
+    .admin-screen { display:none; }
+    .admin-header { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 18px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; }
+    .admin-header-title { font-size:15px; font-weight:700; }
+    .admin-header-sub { font-size:11px; color:var(--text-muted); margin-top:2px; }
+    .btn-logout { font-family:var(--font); font-size:12px; color:var(--text-muted); background:var(--surface-sub); border:1px solid var(--border); border-radius:var(--radius); padding:6px 12px; cursor:pointer; }
+    .status-bar { display:flex; align-items:center; gap:8px; padding:8px 16px; background:var(--surface-sub); border-bottom:1px solid var(--border); font-size:11.5px; color:var(--text-muted); }
+    .status-dot { width:8px; height:8px; border-radius:50%; background:#b0aca4; flex-shrink:0; transition:background 0.3s; }
+    .status-dot.connected { background:#1e9e50; }
+    .summary-bar { display:flex; gap:8px; padding:12px 16px; background:var(--surface-sub); border-bottom:1px solid var(--border); }
+    .summary-chip { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 10px; text-align:center; }
+    .summary-chip .n { font-size:16px; font-weight:700; color:var(--accent); }
+    .summary-chip .l { font-size:10.5px; color:var(--text-muted); margin-top:1px; }
+    .group-section { padding:0 0 8px; }
+    .group-title { font-size:12px; font-weight:700; color:var(--text-secondary); padding:14px 16px 6px; }
+    .sub-title { font-size:11.5px; font-weight:700; color:var(--text-muted); padding:8px 16px 4px; }
+    .sun-row { display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--surface); border-bottom:1px solid var(--border); }
+    .sun-no { width:24px; height:24px; border-radius:50%; background:var(--surface-sub); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--text-secondary); flex-shrink:0; }
+    .sun-info { flex:1; min-width:0; }
+    .sun-leader { font-size:13.5px; font-weight:500; color:var(--text-primary); }
+    .sun-tag { font-size:11px; color:var(--text-muted); font-family:'Courier New',monospace; margin-top:1px; }
+    .toggle-btn {
+      font-family:var(--font); font-size:12.5px; font-weight:700; border:none; border-radius:20px;
+      padding:7px 14px; cursor:pointer; flex-shrink:0; min-width:76px; transition:background 0.15s, color 0.15s;
+    }
+    .toggle-btn.unpaid { background:var(--surface-sub); color:var(--text-muted); border:1px solid var(--border); }
+    .toggle-btn.paid { background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
+    .toggle-btn:disabled { opacity:0.5; cursor:wait; }
+    .admin-content { padding-bottom:24px; }
+    .toast { position:fixed; top:70px; left:50%; transform:translateX(-50%) translateY(-10px); background:#1a1916; color:#fff; font-size:13px; padding:10px 20px; border-radius:20px; opacity:0; transition:opacity 0.2s, transform 0.2s; z-index:100; white-space:nowrap; pointer-events:none; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-title">사르밧 쌀 나눔 관리자</div>
+    <div class="login-sub">관리자 계정으로 로그인하세요</div>
+    <input type="email" id="emailInput" class="field-input" placeholder="이메일" style="margin-bottom:8px;text-align:left;letter-spacing:0;" onkeydown="if(event.key==='Enter')document.getElementById('pwInput').focus()" />
+    <input type="password" id="pwInput" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="btn-login" onclick="doLogin()">로그인</button>
+    <div class="login-error" id="loginError">이메일 또는 비밀번호가 올바르지 않습니다</div>
+  </div>
+</div>
+
+<!-- 관리자 -->
+<div class="admin-screen" id="adminScreen">
+  <div class="admin-header">
+    <div>
+      <div class="admin-header-title">사르밧 쌀 나눔 관리자</div>
+      <div class="admin-header-sub">입금이 확인되면 아래 순을 눌러 체크하세요 — 현황판에 즉시 반영됩니다</div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Firebase 연결 중...</span>
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-chip"><div class="n" id="sumTotal">0/34</div><div class="l" id="sumTotalPct">목표 달성률 0%</div></div>
+    <div class="summary-chip"><div class="n" id="sumFaith">0/12</div><div class="l">믿음</div></div>
+    <div class="summary-chip"><div class="n" id="sumHope">0/7</div><div class="l">소망</div></div>
+    <div class="summary-chip"><div class="n" id="sumLove">0/15</div><div class="l">사랑</div></div>
+  </div>
+
+  <div class="admin-content" id="adminContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"
+  onerror="document.getElementById('statusText').textContent='Firebase 로드 실패 — 네트워크 확인 필요';document.getElementById('statusDot').style.background='#c0392b';">
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
+  onerror="document.getElementById('statusText').textContent='Firebase DB 로드 실패';">
+</script>
+
+<script>
+// ── 34개 순 구조 (org.html 명단 기준, 직분 제외 — sarabat.html과 동일) ──
+var DARAKBANG = [
+  { key:'믿음', label:'믿음 다락방', subs:[
+      { key:'믿음1', label:'믿음1다락방', suns:[
+          {no:1, leader:'김의래, 김성희'},
+          {no:2, leader:'주웅현, 서정숙'},
+          {no:3, leader:'김현식, 복유선'},
+          {no:4, leader:'정순영'},
+          {no:5, leader:'정두식, 이영미'},
+          {no:6, leader:'황한나'},
+      ]},
+      { key:'믿음2', label:'믿음2다락방', suns:[
+          {no:8, leader:'조재관, 김문경'},
+          {no:9, leader:'이금자'},
+          {no:10, leader:'송영이'},
+          {no:11, leader:'이성진, 김혜진'},
+          {no:12, leader:'이창권, 이임순'},
+          {no:13, leader:'김영미'},
+      ]},
+  ]},
+  { key:'소망', label:'소망 다락방', subs:[
+      { key:'소망1', label:'소망1다락방', suns:[
+          {no:1, leader:'박제한, 김윤미'},
+          {no:2, leader:'강행자'},
+          {no:3, leader:'이명선'},
+          {no:4, leader:'이강남'},
+      ]},
+      { key:'소망2', label:'소망2다락방', suns:[
+          {no:8, leader:'남관우, 구자영'},
+          {no:9, leader:'최인경'},
+          {no:10, leader:'허은진'},
+      ]},
+  ]},
+  { key:'사랑', label:'사랑 다락방', subs:[
+      { key:'사랑1', label:'사랑1다락방', suns:[
+          {no:1, leader:'김성현, 전성심'},
+          {no:2, leader:'고주식, 윤수란'},
+          {no:3, leader:'유덕영, 정현지'},
+          {no:4, leader:'이숙인'},
+          {no:5, leader:'—'},
+          {no:6, leader:'강은주'},
+          {no:7, leader:'송정미'},
+      ]},
+      { key:'사랑2', label:'사랑2다락방', suns:[
+          {no:8, leader:'이성한, 이선화'},
+          {no:9, leader:'안승립, 구혜정'},
+          {no:10, leader:'이영욱'},
+          {no:11, leader:'최황, 오영미'},
+          {no:12, leader:'박지수, 이지영'},
+          {no:13, leader:'김종중, 정영혜'},
+          {no:14, leader:'정충균, 이종선'},
+          {no:15, leader:'이연주'},
+      ]},
+  ]},
+];
+
+function sunKey(subKey, no) { return subKey + '-' + no; }
+function depositTag(groupKey, no) { return '중종로' + groupKey + no; }
+function firstName(leader) { return leader.split(',')[0].trim(); }
+
+var _dbRef = null;
+var _paidMap = {};
+
+// ── Firebase 초기화 ────────────────────────────
+window.addEventListener('load', function() {
+  try {
+    firebase.initializeApp({
+      apiKey:            "AIzaSyCoStBz_34c5ZvplNSm8rarnd7zVLUiexk",
+      authDomain:        "cgn-love.firebaseapp.com",
+      databaseURL:       "https://cgn-love-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:         "cgn-love",
+      storageBucket:     "cgn-love.firebasestorage.app",
+      messagingSenderId: "164467571776",
+      appId:             "1:164467571776:web:6c3df66c56f907e808b3a5"
+    });
+
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminScreen').style.display = 'block';
+        initDB();
+      } else {
+        document.getElementById('adminScreen').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        if (_dbRef) { _dbRef.off(); _dbRef = null; }
+      }
+    });
+  } catch(e) {
+    document.getElementById('statusDot').style.background = '#c0392b';
+    document.getElementById('statusText').textContent = 'Firebase 오류: ' + e.message;
+  }
+});
+
+function initDB() {
+  _dbRef = firebase.database().ref('sarabat2026/paid');
+  _dbRef.on('value', function(snap) {
+    document.getElementById('statusDot').classList.add('connected');
+    document.getElementById('statusText').textContent = 'Firebase 연결됨 — 클릭 시 즉시 반영';
+    _paidMap = snap.val() || {};
+    renderAdmin();
+  }, function(err) {
+    document.getElementById('statusDot').style.background = '#c0392b';
+    document.getElementById('statusText').textContent = '연결 실패: ' + err.message;
+  });
+}
+
+// ── 인증 ──────────────────────────────────────
+function doLogin() {
+  var email = document.getElementById('emailInput').value.trim();
+  var pw    = document.getElementById('pwInput').value;
+  var errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !pw) { errEl.style.display = 'block'; return; }
+  firebase.auth().signInWithEmailAndPassword(email, pw)
+    .catch(function() {
+      errEl.style.display = 'block';
+      document.getElementById('pwInput').value = '';
+    });
+}
+function doLogout() { firebase.auth().signOut(); }
+
+// ── 렌더링 ────────────────────────────────────
+function renderAdmin() {
+  var content = document.getElementById('adminContent');
+  content.innerHTML = '';
+
+  var grandTotal = 0, grandPaid = 0;
+  var groupStat = {};
+
+  DARAKBANG.forEach(function(group) {
+    var section = document.createElement('div');
+    section.className = 'group-section';
+
+    var gTitle = document.createElement('div');
+    gTitle.className = 'group-title';
+    gTitle.textContent = group.label;
+    section.appendChild(gTitle);
+
+    var groupTotal = 0, groupPaid = 0;
+
+    group.subs.forEach(function(sub) {
+      var subTitle = document.createElement('div');
+      subTitle.className = 'sub-title';
+      subTitle.textContent = sub.label;
+      section.appendChild(subTitle);
+
+      sub.suns.forEach(function(sun) {
+        groupTotal++;
+        var key = sunKey(sub.key, sun.no);
+        var paid = !!_paidMap[key];
+        if (paid) groupPaid++;
+
+        var row = document.createElement('div');
+        row.className = 'sun-row';
+        row.innerHTML =
+          '<div class="sun-no">' + sun.no + '</div>' +
+          '<div class="sun-info">' +
+            '<div class="sun-leader">' + firstName(sun.leader) + '</div>' +
+            '<div class="sun-tag">' + depositTag(group.key, sun.no) + '</div>' +
+          '</div>' +
+          '<button class="toggle-btn ' + (paid ? 'paid' : 'unpaid') + '" data-key="' + key + '">' +
+            (paid ? '입금완료' : '입금대기') +
+          '</button>';
+        section.appendChild(row);
+      });
+    });
+
+    groupStat[group.key] = { total: groupTotal, paid: groupPaid };
+    grandTotal += groupTotal;
+    grandPaid  += groupPaid;
+
+    content.appendChild(section);
+  });
+
+  document.getElementById('sumTotal').textContent = grandPaid + '/' + grandTotal;
+  document.getElementById('sumTotalPct').textContent = '목표 달성률 ' + (grandTotal ? Math.round(grandPaid / grandTotal * 100) : 0) + '%';
+  document.getElementById('sumFaith').textContent = groupStat['믿음'].paid + '/' + groupStat['믿음'].total;
+  document.getElementById('sumHope').textContent  = groupStat['소망'].paid + '/' + groupStat['소망'].total;
+  document.getElementById('sumLove').textContent  = groupStat['사랑'].paid + '/' + groupStat['사랑'].total;
+
+  content.querySelectorAll('.toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { onToggle(btn.getAttribute('data-key')); });
+  });
+}
+
+function onToggle(key) {
+  if (!_dbRef) return;
+  var next = !_paidMap[key];
+  var btn = document.querySelector('.toggle-btn[data-key="' + key + '"]');
+  if (btn) btn.disabled = true;
+  _dbRef.child(key).set(next)
+    .then(function() { showToast(next ? '입금완료로 표시했습니다' : '입금대기로 되돌렸습니다'); })
+    .catch(function(err) { showToast('저장 실패: ' + err.message); })
+    .finally(function() { if (btn) btn.disabled = false; });
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+</script>
+</body>
+</html>
