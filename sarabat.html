@@ -205,16 +205,12 @@
     td.tag { color: #6b3a1e; font-family: 'Courier New', monospace; font-weight: 700; font-size: 11px; }
 
     td.status-cell { text-align: center; }
-    .paid-mark {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 18px; height: 18px; border-radius: 50%;
-      background: #16a34a; color: #fff; font-size: 12px; font-weight: 900; line-height: 1;
-    }
+    .paid-mark { display: inline-block; vertical-align: middle; }
 
     @media (max-width: 600px) {
       th, td { padding: 6px 8px; font-size: 11px; }
       td.tag { font-size: 10px; }
-      .paid-mark { width: 16px; height: 16px; font-size: 10px; }
+      .paid-mark svg { width: 16px; height: 16px; }
     }
 
     footer {
@@ -366,7 +362,13 @@ function depositTag(groupKey, no) { return '중종로' + groupKey + no; }
 function firstName(leader) { return leader.split(',')[0].trim(); }
 
 // 입금완료 시 표시하는 체크 표식. 미입금은 빈 칸.
-var PAID_MARK = '<span class="paid-mark" role="img" aria-label="입금완료">&#10003;</span>';
+var PAID_MARK = '<span class="paid-mark" role="img" aria-label="입금완료">' +
+  '<svg width="20" height="20" viewBox="0 0 24 24">' +
+    '<rect x="6" y="9" width="12" height="12" rx="5" fill="#c99a54" stroke="#8a6432" stroke-width="1"/>' +
+    '<rect x="10.3" y="6.5" width="3.4" height="4" fill="#8a6432"/>' +
+    '<ellipse cx="12" cy="6.7" rx="2.8" ry="2.1" fill="#8a6432"/>' +
+  '</svg>' +
+'</span>';
 
 // ── 렌더링 ──────────────────────────────────────
 function render(paidMap) {
