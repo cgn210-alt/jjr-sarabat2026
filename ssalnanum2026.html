@@ -204,13 +204,15 @@
     td.leader { font-weight: 700; color: #1e40af; }
     td.tag { color: #6b3a1e; font-family: 'Courier New', monospace; font-weight: 700; font-size: 11px; }
 
-    td.status-cell { text-align: center; }
-    .paid-mark { display: inline-block; vertical-align: middle; }
+    td.status-cell { text-align: center; overflow: visible; white-space: normal; }
+    .bag-icons { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px; }
+    .bag-icon { height: 22px; width: auto; vertical-align: middle; }
+    .bag-extra { font-size: 10.5px; font-weight: 700; color: #a5651f; margin-left: 2px; }
 
     @media (max-width: 600px) {
       th, td { padding: 6px 8px; font-size: 11px; }
       td.tag { font-size: 10px; }
-      .paid-mark svg { width: 16px; height: 16px; }
+      .bag-icon { height: 18px; }
     }
 
     footer {
@@ -361,18 +363,24 @@ function sunKey(subKey, no) { return subKey + '-' + no; }
 function depositTag(groupKey, no) { return '중종로' + groupKey + no; }
 function firstName(leader) { return leader.split(',')[0].trim(); }
 
-// 입금완료 시 표시하는 체크 표식. 미입금은 빈 칸.
-var PAID_MARK = '<span class="paid-mark" role="img" aria-label="입금완료">' +
-  '<svg width="20" height="20" viewBox="0 0 24 24">' +
-    '<rect x="6" y="9" width="12" height="12" rx="5" fill="#c99a54" stroke="#8a6432" stroke-width="1"/>' +
-    '<rect x="10.3" y="6.5" width="3.4" height="4" fill="#8a6432"/>' +
-    '<ellipse cx="12" cy="6.7" rx="2.8" ry="2.1" fill="#8a6432"/>' +
-  '</svg>' +
-'</span>';
+// 입금 포대 수만큼 반복 표시하는 쌀가마니 아이콘. 미입금은 빈 칸.
+var MAX_BAG_ICONS = 6; // 한 칸에 너무 많이 쌓이지 않도록 표시 상한 (넘으면 "+N"으로 표기)
+function bagIconsHTML(count) {
+  if (count <= 0) return '';
+  var shown = Math.min(count, MAX_BAG_ICONS);
+  var html = '<span class="bag-icons" role="img" aria-label="입금 ' + count + '포대">';
+  for (var i = 0; i < shown; i++) {
+    html += '<img class="bag-icon" src="./rice-bag-icon.png" alt="">';
+  }
+  if (count > MAX_BAG_ICONS) html += '<span class="bag-extra">+' + (count - MAX_BAG_ICONS) + '</span>';
+  html += '</span>';
+  return html;
+}
 
 // ── 렌더링 ──────────────────────────────────────
-function render(paidMap) {
+function render(paidMap, bagMap) {
   paidMap = paidMap || {};
+  bagMap = bagMap || {};
   var container = document.getElementById('container');
   container.innerHTML = '';
 
@@ -413,12 +421,15 @@ function render(paidMap) {
         '<thead><tr><th>순</th><th>순장</th><th>입금자명 표시</th><th>입금</th></tr></thead>' +
         '<tbody>' +
         sub.suns.map(function(sun) {
-          var paid = !!paidMap[sunKey(sub.key, sun.no)];
+          var key = sunKey(sub.key, sun.no);
+          var paid = !!paidMap[key];
+          var bagCount = parseInt(bagMap[key], 10) || 0;
+          if (bagCount <= 0 && paid) bagCount = 1; // 금액 입력 전, 예전 방식으로 체크만 된 순은 1포대로 표시
           return '<tr>' +
             '<td>' + sun.no + '</td>' +
             '<td class="leader">' + firstName(sun.leader) + '</td>' +
             '<td class="tag">' + depositTag(group.key, sun.no) + '</td>' +
-            '<td class="status-cell">' + (paid ? PAID_MARK : '') + '</td>' +
+            '<td class="status-cell">' + bagIconsHTML(bagCount) + '</td>' +
           '</tr>';
         }).join('') +
         '</tbody>';
@@ -439,17 +450,17 @@ function render(paidMap) {
 }
 
 // ── 데이터 로드 (Firebase REST API, 주기적 폴링) ──────────────────
-var DB_URL = 'https://cgn-love-default-rtdb.asia-southeast1.firebasedatabase.app/sarabat2026/paid.json';
+var DB_URL = 'https://cgn-love-default-rtdb.asia-southeast1.firebasedatabase.app/sarabat2026.json';
 var POLL_INTERVAL = 8000;
 
 function loadData() {
   fetch(DB_URL, { cache: 'no-store' })
     .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-    .then(function(data) { render(data || {}); })
-    .catch(function() { render({}); });
+    .then(function(data) { data = data || {}; render(data.paid || {}, data.bagCount || {}); })
+    .catch(function() { render({}, {}); });
 }
 
-render({});
+render({}, {});
 loadData();
 setInterval(loadData, POLL_INTERVAL);
 </script>

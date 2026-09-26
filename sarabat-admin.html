@@ -183,8 +183,10 @@ function firstName(leader) { return leader.split(',')[0].trim(); }
 
 var _dbRef = null;
 var _amountRef = null;
+var _bagRef = null;
 var _paidMap = {};
 var _amountMap = {};
+var BAG_UNIT = 65000; // 쌀 한 포대(20kg) 값 — 이 배수마다 포대 아이콘 1개
 
 // ── Firebase 초기화 ────────────────────────────
 window.addEventListener('load', function() {
@@ -237,6 +239,9 @@ function initDB() {
   }, function(err) {
     showToast('금액 데이터 연결 실패: ' + err.message);
   });
+
+  // 포대 개수(금액을 65,000원 단위로 환산한 값)만 공개 경로(sarabat2026)에 저장 — 정확한 금액은 노출되지 않음
+  _bagRef = firebase.database().ref('sarabat2026/bagCount');
 }
 
 // ── 인증 ──────────────────────────────────────
@@ -340,8 +345,10 @@ function onAmountChange(key, rawVal) {
   if (!_amountRef) return;
   var val = parseInt(rawVal, 10);
   if (isNaN(val) || val < 0) val = 0;
+  var bagCount = Math.floor(val / BAG_UNIT);
   _amountRef.child(key).set(val)
-    .then(function() { showToast('금액이 저장되었습니다 (' + val.toLocaleString('ko-KR') + '원)'); })
+    .then(function() { return _bagRef ? _bagRef.child(key).set(bagCount) : null; })
+    .then(function() { showToast('금액이 저장되었습니다 (' + val.toLocaleString('ko-KR') + '원 · ' + bagCount + '포대)'); })
     .catch(function(err) { showToast('금액 저장 실패: ' + err.message); });
 }
 
