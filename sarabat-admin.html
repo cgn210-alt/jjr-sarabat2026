@@ -54,6 +54,14 @@
     .toggle-btn.unpaid { background:var(--surface-sub); color:var(--text-muted); border:1px solid var(--border); }
     .toggle-btn.paid { background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
     .toggle-btn:disabled { opacity:0.5; cursor:wait; }
+    .amount-input {
+      width:78px; flex-shrink:0; font-family:var(--font); font-size:12.5px; text-align:right;
+      border:1px solid var(--border); border-radius:8px; padding:6px 8px;
+      background:var(--surface-sub); color:var(--text-primary); outline:none;
+    }
+    .amount-input:focus { border-color:var(--accent); background:var(--surface); }
+    .summary-chip.amount { flex:1.4; }
+    .summary-chip.amount .n { font-size:14px; }
     .admin-content { padding-bottom:24px; }
     .toast { position:fixed; top:70px; left:50%; transform:translateX(-50%) translateY(-10px); background:#1a1916; color:#fff; font-size:13px; padding:10px 20px; border-radius:20px; opacity:0; transition:opacity 0.2s, transform 0.2s; z-index:100; white-space:nowrap; pointer-events:none; }
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -78,7 +86,7 @@
   <div class="admin-header">
     <div>
       <div class="admin-header-title">사르밧 쌀 나눔 관리자</div>
-      <div class="admin-header-sub">입금이 확인되면 아래 순을 눌러 체크하세요 — 현황판에 즉시 반영됩니다</div>
+      <div class="admin-header-sub">입금이 확인되면 아래 순을 눌러 체크하고 금액을 입력하세요 — 금액은 관리자에게만 보입니다</div>
     </div>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
   </div>
@@ -93,6 +101,9 @@
     <div class="summary-chip"><div class="n" id="sumFaith">0/12</div><div class="l">믿음</div></div>
     <div class="summary-chip"><div class="n" id="sumHope">0/7</div><div class="l">소망</div></div>
     <div class="summary-chip"><div class="n" id="sumLove">0/15</div><div class="l">사랑</div></div>
+  </div>
+  <div class="summary-bar">
+    <div class="summary-chip amount"><div class="n" id="sumAmount">0원</div><div class="l">입금 합계 금액 (관리자 전용)</div></div>
   </div>
 
   <div class="admin-content" id="adminContent"></div>
@@ -171,7 +182,9 @@ function depositTag(groupKey, no) { return '중종로' + groupKey + no; }
 function firstName(leader) { return leader.split(',')[0].trim(); }
 
 var _dbRef = null;
+var _amountRef = null;
 var _paidMap = {};
+var _amountMap = {};
 
 // ── Firebase 초기화 ────────────────────────────
 window.addEventListener('load', function() {
@@ -195,6 +208,7 @@ window.addEventListener('load', function() {
         document.getElementById('adminScreen').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
         if (_dbRef) { _dbRef.off(); _dbRef = null; }
+        if (_amountRef) { _amountRef.off(); _amountRef = null; }
       }
     });
   } catch(e) {
@@ -213,6 +227,15 @@ function initDB() {
   }, function(err) {
     document.getElementById('statusDot').style.background = '#c0392b';
     document.getElementById('statusText').textContent = '연결 실패: ' + err.message;
+  });
+
+  // 금액은 별도의 관리자 전용 경로(로그인해야 읽기/쓰기 가능)에 저장 — 공개 현황판에는 노출되지 않음
+  _amountRef = firebase.database().ref('sarabat2026_amounts');
+  _amountRef.on('value', function(snap) {
+    _amountMap = snap.val() || {};
+    renderAdmin();
+  }, function(err) {
+    showToast('금액 데이터 연결 실패: ' + err.message);
   });
 }
 
@@ -236,7 +259,7 @@ function renderAdmin() {
   var content = document.getElementById('adminContent');
   content.innerHTML = '';
 
-  var grandTotal = 0, grandPaid = 0;
+  var grandTotal = 0, grandPaid = 0, grandAmount = 0;
   var groupStat = {};
 
   DARAKBANG.forEach(function(group) {
@@ -261,6 +284,8 @@ function renderAdmin() {
         var key = sunKey(sub.key, sun.no);
         var paid = !!_paidMap[key];
         if (paid) groupPaid++;
+        var amount = parseInt(_amountMap[key], 10) || 0;
+        grandAmount += amount;
 
         var row = document.createElement('div');
         row.className = 'sun-row';
@@ -270,6 +295,7 @@ function renderAdmin() {
             '<div class="sun-leader">' + firstName(sun.leader) + '</div>' +
             '<div class="sun-tag">' + depositTag(group.key, sun.no) + '</div>' +
           '</div>' +
+          '<input class="amount-input" type="number" min="0" step="1000" placeholder="금액" data-key="' + key + '" value="' + (amount || '') + '">' +
           '<button class="toggle-btn ' + (paid ? 'paid' : 'unpaid') + '" data-key="' + key + '">' +
             (paid ? '입금완료' : '입금대기') +
           '</button>';
@@ -289,9 +315,13 @@ function renderAdmin() {
   document.getElementById('sumFaith').textContent = groupStat['믿음'].paid + '/' + groupStat['믿음'].total;
   document.getElementById('sumHope').textContent  = groupStat['소망'].paid + '/' + groupStat['소망'].total;
   document.getElementById('sumLove').textContent  = groupStat['사랑'].paid + '/' + groupStat['사랑'].total;
+  document.getElementById('sumAmount').textContent = grandAmount.toLocaleString('ko-KR') + '원';
 
   content.querySelectorAll('.toggle-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { onToggle(btn.getAttribute('data-key')); });
+  });
+  content.querySelectorAll('.amount-input').forEach(function(inp) {
+    inp.addEventListener('change', function() { onAmountChange(inp.getAttribute('data-key'), inp.value); });
   });
 }
 
@@ -304,6 +334,15 @@ function onToggle(key) {
     .then(function() { showToast(next ? '입금완료로 표시했습니다' : '입금대기로 되돌렸습니다'); })
     .catch(function(err) { showToast('저장 실패: ' + err.message); })
     .finally(function() { if (btn) btn.disabled = false; });
+}
+
+function onAmountChange(key, rawVal) {
+  if (!_amountRef) return;
+  var val = parseInt(rawVal, 10);
+  if (isNaN(val) || val < 0) val = 0;
+  _amountRef.child(key).set(val)
+    .then(function() { showToast('금액이 저장되었습니다 (' + val.toLocaleString('ko-KR') + '원)'); })
+    .catch(function(err) { showToast('금액 저장 실패: ' + err.message); });
 }
 
 function showToast(msg) {
