@@ -205,14 +205,14 @@
     td.tag { color: #6b3a1e; font-family: 'Courier New', monospace; font-weight: 700; font-size: 11px; }
 
     td.status-cell { text-align: center; overflow: visible; white-space: normal; }
-    .bag-icons { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px; }
-    .bag-icon { height: 22px; width: auto; vertical-align: middle; }
+    .bag-icons { display: inline-flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 1px; }
+    .bag-icon { height: 18px; width: auto; flex-shrink: 0; vertical-align: middle; }
     .bag-extra { font-size: 10.5px; font-weight: 700; color: #a5651f; margin-left: 2px; }
 
     @media (max-width: 600px) {
       th, td { padding: 6px 8px; font-size: 11px; }
       td.tag { font-size: 10px; }
-      .bag-icon { height: 18px; }
+      .bag-icon { height: 15px; }
     }
 
     footer {
@@ -364,7 +364,7 @@ function depositTag(groupKey, no) { return '중종로' + groupKey + no; }
 function firstName(leader) { return leader.split(',')[0].trim(); }
 
 // 입금 포대 수만큼 반복 표시하는 쌀가마니 아이콘. 미입금은 빈 칸.
-var MAX_BAG_ICONS = 6; // 한 칸에 너무 많이 쌓이지 않도록 표시 상한 (넘으면 "+N"으로 표기)
+var MAX_BAG_ICONS = 3; // 한 줄 안에 들어가도록 표시 상한 (넘으면 "+N"으로 표기, 두 줄로 넘어가지 않음)
 function bagIconsHTML(count) {
   if (count <= 0) return '';
   var shown = Math.min(count, MAX_BAG_ICONS);
